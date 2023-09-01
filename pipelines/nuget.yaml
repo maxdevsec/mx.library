@@ -1,0 +1,34 @@
+trigger:
+- main
+
+variables:
+  buildConfiguration: "release"
+  major: "1"
+  minor: "1"
+  patch: "0"
+pool:
+  name: DevOpsLocal
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    command: build
+    arguments: ' --configuration $(BuildConfiguration)'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: "dotnet pack"  
+  inputs:
+      command: 'pack'
+      arguments: '--configuration $(BuildConfiguration)'
+      packagesToPack: '**/*.csproj'
+      nobuild: true
+      versioningScheme: 'off'
+      
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'a0c997df-a43a-433e-bd73-ab7c240b7b19/73e70d71-0f8e-4a43-badd-c9fc7befbe38'
